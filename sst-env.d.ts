@@ -7,9 +7,13 @@ declare module "sst" {
       "type": "sst.aws.ApiGatewayV2"
       "url": string
     }
-    "EmpImpRequests": {
+    "EmployeeImport": {
       "name": string
       "type": "sst.aws.Bucket"
+    }
+    "Employees": {
+      "name": string
+      "type": "sst.aws.Dynamo"
     }
   }
 }

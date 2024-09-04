@@ -3,7 +3,7 @@
 export default $config({
   app(input) {
     return {
-      name: "monorepo-template",
+      name: "employee-imports",
       removal: input?.stage === "production" ? "retain" : "remove",
       home: "aws",
     };
@@ -11,5 +11,6 @@ export default $config({
   async run() {
     await import("./infra/storage");
     await import("./infra/api");
+    await import("./infra/processing");
   },
 });
