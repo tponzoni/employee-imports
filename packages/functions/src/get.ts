@@ -47,6 +47,9 @@ export const handler: Handler = async (event) => {
   if (importResp) body.report = importResp;
 
   return {
+    headers: {
+      "content-type": "application/json",
+    },
     statusCode: code,
     body: JSON.stringify(body),
   };

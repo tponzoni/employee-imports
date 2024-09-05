@@ -38,10 +38,10 @@ export const handler: Handler = async (event) => {
       if (!hasErrors) {
         // save the JSON payload to S3 for async processing, return a job import request id
         const strPayload = JSON.stringify(payload);
-        const key = generateUniqueKey(strPayload);
-        importJobId = await putObjectToS3(
+        importJobId = generateUniqueKey(strPayload);
+        await putObjectToS3(
           BUCKET_NAME,
-          `request/${key}`,
+          `request/${importJobId}`,
           strPayload,
         );
 

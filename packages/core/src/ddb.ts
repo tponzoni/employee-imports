@@ -10,18 +10,16 @@ const dynamoDbClient = new DynamoDBClient({ region: process.env.AWS_REGION });
 
 /**
  * Writes a batch of employee items to the DynamoDB table
- * @param table - The DznamoDB table to batch put the items into.
+ * @param table - The DynamoDB table to batch put the items into.
  * @param validEmployeeItems - An array of valid employee JSON objects to be put into the table within a batch
  */
-export const batchWriteItemToDdb = async (
+export const batchWriteItem = async (
   table: string,
   validEmployeeItems: ValidatedItem[],
 ) => {
   const putRequests: WriteRequest[] = [];
-  
-  console.log("validEmployeeItems", validEmployeeItems);
 
-  // Iterate over validEmployeeItems and create PutRequest objects
+  // iterate over validEmployeeItems and create PutRequest objects
   validEmployeeItems.forEach((item) => {
     if (item.employee) {
       putRequests.push({
@@ -37,15 +35,11 @@ export const batchWriteItemToDdb = async (
     }
   });
 
-  console.log("putRequests", putRequests);
-
   const batchWriteInput: BatchWriteItemCommandInput = {
     RequestItems: {
       [table]: putRequests,
     },
   };
-
-  console.log("batchWriteInput", batchWriteInput);
 
   // Execute the batch write operation
   const batchWriteResp = await executeBatchWrite(batchWriteInput);
@@ -55,6 +49,10 @@ export const batchWriteItemToDdb = async (
   return batchWriteResp;
 };
 
+/**
+ * Executes a batch write command with an array of employee items to the DynamoDB table
+ * @param batchWriteInput - The BatchWriteItemCommandInput containing the PutRequests with Employee data
+ */
 async function executeBatchWrite(batchWriteInput: BatchWriteItemCommandInput) {
   let result = null;
   try {

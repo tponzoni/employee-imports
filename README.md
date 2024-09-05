@@ -4,6 +4,15 @@ A template to create a monorepo SST ❍ Ion project.
 
 ## Get started
 
+1. Deploy
+2. Run test against the employee-imports API (see Testing)
+
+## Testing
+
+From the terminal in the ./tests folder, run post-import-request.sh to simulate a JSON POST to the employee-imports API
+
+## 
+
 1. Use this template to [create your own repo](https://docs.github.com/en/repositories/creating-and-managing-repositories/creating-a-repository-from-a-template).
 
 2. Clone the new repo.

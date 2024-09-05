@@ -1,6 +1,6 @@
 import { Handler } from "aws-lambda";
 import { getObject, putObjectToS3 } from "../../core/src/s3";
-import { batchWriteItemToDdb } from "../../core/src/ddb";
+import { batchWriteItem } from "../../core/src/ddb";
 import {
   ValidatedItem,
   GroupedErrors,
@@ -86,7 +86,7 @@ export const processImportRequest = async (
       validEmployeeItems.push(validatedItem);
 
       if (validEmployeeItems.length == 25 || i == items.length - 1) {
-        const batchWriteResp = await batchWriteItemToDdb(
+        const batchWriteResp = await batchWriteItem(
           TABLE_NAME,
           validEmployeeItems,
         );

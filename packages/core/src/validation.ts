@@ -84,22 +84,16 @@ export const validateEmployees = (
       }
     }
     
+    // all items keep track of duplicates, by empNo or phNo
     allItems.push(validatedItem);
 
-    console.log("allItems", allItems);
-
+    // apply a filter to return only the desired items from the input
     if (filter == "all" || (filter == "valid" && errors.length == 0)) {
-      console.log("here 3");
-
       filteredItems.push(validatedItem);
     } else if (filter == "errors" && errors.length > 0) {
-      console.log("here 4");
-
       filteredItems.push(validatedItem);
     }
   }
-
-  console.log("filteredItems", filteredItems);
 
   return filteredItems;
 };
