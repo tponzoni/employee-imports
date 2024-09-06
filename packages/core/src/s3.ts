@@ -7,13 +7,15 @@ import { Readable } from "stream";
 
 const s3Client = new S3Client({ region: process.env.AWS_REGION });
 
+const DEBUG = process.env.DEBUG == "1";
+
 /**
  * Saves a JSON array payload into S3 for async processing.
  * @param bucket - The S3 bucket to put the object into.
  * @param key - The S3 object key.
  * @param payload - The payload as a serialized JSON string for the object content.
  */
-export const putObjectToS3 = async (
+export const putObject = async (
   bucket: string,
   key: string,
   payload: string,
@@ -22,12 +24,12 @@ export const putObjectToS3 = async (
     Bucket: bucket,
     Key: key,
     Body: payload,
-    ContentType: "application/json", // Specify the content type
+    ContentType: "application/json", 
   };
 
   const command = new PutObjectCommand(params);
-  console.log(
-    `Putting object to S3. Bucket: ${params.Bucket}. Key: ${params.Key}`,
+  if (DEBUG) console.log(
+    `Putting S3 object. Bucket ${params.Bucket} key ${params.Key}`,
   );
   await s3Client.send(command);
 

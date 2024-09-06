@@ -8,11 +8,11 @@ api.route("POST /employee-imports", {
   environment: {
     MAX_PER_REQ: "10000",
     BUCKET_NAME: bucket.name,
-    DEBUG: "1"
+    DEBUG: "0"
   }
 });
 
-api.route("GET /employee-imports/{importJobId}", {
+api.route("GET /employee-imports/{importId}", {
   link: [bucket],
   handler: "packages/functions/src/get.handler",
   environment: {

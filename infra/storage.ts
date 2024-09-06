@@ -4,7 +4,8 @@ export const bucket = new sst.aws.Bucket("EmployeeImport");
 // this table stores the actual Emplooyee data and has both empNo and phNo (GSI) as unique fieds
 export const table = new sst.aws.Dynamo("Employees", {
   fields: {
-    empNo: "string"
+    PK: "string",
+    SK: "string"
   },
-  primaryIndex: { hashKey: "empNo" },
+  primaryIndex: { hashKey: "PK", rangeKey: "SK" }
 });

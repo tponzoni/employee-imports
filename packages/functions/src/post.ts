@@ -5,21 +5,21 @@ import {
   GroupedErrors,
   validateEmployees,
 } from "../../core/src/validation";
-import { putObjectToS3 } from "../../core/src/s3";
+import { putObject } from "../../core/src/s3";
 
 const DEBUG = process.env.DEBUG == "1";
 const MAX_PER_REQ = process.env.MAX_PER_REQ;
 const BUCKET_NAME = process.env.BUCKET_NAME;
 
 export const handler: Handler = async (event) => {
-  let importJobId = null;
+  let importId = null;
   let code = 500;
   let message = "";
   let validatedItems: ValidatedItem[] = [];
   let hasErrors: boolean = false;
 
   try {
-    console.log("Validating request payload");
+    if (DEBUG) console.log("Validating request payload");
 
     const payload = JSON.parse(event.body);
 
@@ -29,21 +29,18 @@ export const handler: Handler = async (event) => {
       payload.length > 0 &&
       payload.length <= MAX_PER_REQ
     ) {
-      // check whether the elements in the array have the correct fields
+      // parse all the JSON elements in the array and filter items with errors
       validatedItems = validateEmployees(payload, "errors");
 
       // check if any of the employee was not parsed successfully, only proceed if all the items had a valid employee
-      hasErrors = validatedItems.some((item) => !item.employee);
+      hasErrors = validatedItems.some((item) => item.errors?.length);
 
       if (!hasErrors) {
-        // save the JSON payload to S3 for async processing, return a job import request id
+        // generate an object key and save it to S3 for async processing
         const strPayload = JSON.stringify(payload);
-        importJobId = generateUniqueKey(strPayload);
-        await putObjectToS3(
-          BUCKET_NAME,
-          `request/${importJobId}`,
-          strPayload,
-        );
+        importId = generateUniqueKey(strPayload);
+
+        await putObject(BUCKET_NAME, `request/${importId}`, strPayload);
 
         code = 202;
         message =
@@ -66,12 +63,14 @@ export const handler: Handler = async (event) => {
   let body = { message };
 
   if (!hasErrors) {
-    if (importJobId) body.importJobId = importJobId;
-    console.log("Body", body);
+    if (importId) body.importId = importId;
+    if (DEBUG) console.log("Request id", importId);
   } else {
+    console.log("Errors detected");
+
     // check if the header 'x-resp-group-by-index' is present, the default response groups by
     // error message and presents a list of indexes that have a specific error message
-    if (!event.headers["x-resp-group-by-index"]) {
+    if (event.headers["x-resp-group-by-error"]) {
       // summarize the errors for a shorter response payload that has less repetition
       const groupedErrors: GroupedErrors = {};
 
@@ -105,7 +104,23 @@ export const handler: Handler = async (event) => {
  * @returns a unique key for S3 object which combines both the hash and the current time
  */
 export const generateUniqueKey = (payload: string): string => {
-  const timestamp = new Date().toISOString(); // current date and time
-  const hash = crypto.createHash("sha256").update(payload).digest("hex"); // create hash
-  return `${hash}_${timestamp.replace(/[:.-]/g, "")}`; // create a unique key
+  
+  const newGUID = generateGUID();
+  return newGUID;
+  // const newUUID: string = uuidv4();
+  // console.log(newUUID);
+  // const timestamp = new Date().toISOString(); // current date and time
+  // const hash = crypto.createHash("sha256").update(payload).digest("hex"); // create hash
+  // return `${hash}_${timestamp.replace(/[:.-]/g, "")}`; // create a unique key
 };
+
+
+function generateGUID() {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        const r = Math.random() * 16 | 0;
+        const v = c === 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+    });
+}
+
+const newGUID = generateGUID();

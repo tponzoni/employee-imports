@@ -1,8 +1,6 @@
 [
-    { "empNo": "a", "firstName": "thyago", "lastName": "de m ponzoni", "phNo": "1" },
-    { "empNo": "b", "firstName": "thyago", "lastName": "de m ponzoni", "phNo": "2" },
-    { "empNo": "c", "firstName": "thyago", "lastName": "de m ponzoni", "phNo": "3" },
+    { "empNo": "c", "firstName": "thyago", "lastName": "ponzoni", "phNo": "2" },
     { "empNo": "d", "firstName": "thyago", "lastName": "de m ponzoni", "phNo": "4" },
-    { "empNo": "e", "firstName": "thyago", "lastName": "de m ponzoni", "phNo": "5" },
-    { "empNo": "f", "firstName": "thyago", "lastName": "de m ponzoni", "phNo": "6" }
+    { "empNo": "e", "firstName": "thyago", "lastName": "de m ponzoni" },
+    { "empNo": "a", "firstName": "thyago", "lastName": "de m ponzoni", "phNo": "2" }
 ]

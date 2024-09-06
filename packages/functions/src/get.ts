@@ -7,7 +7,7 @@ const s3Client = new S3Client({ region: process.env.AWS_REGION });
 const BUCKET_NAME = process.env.BUCKET_NAME;
 
 export const handler: Handler = async (event) => {
-  let importJobId = event.pathParameters?.importJobId;
+  let importId = event.pathParameters?.importId;
   let importResp = null;
   let code = 500;
   let message = "";
@@ -16,9 +16,9 @@ export const handler: Handler = async (event) => {
     console.log("Validating request parameters");
 
     // check if the required import job id was provided in the URL
-    if (importJobId) {
+    if (importId) {
       // try to retrieve a response S3 object for the import job id
-      importResp = await getImportJobResponse(importJobId);
+      importResp = await getImportJobResponse(importId);
 
       if (importResp) {
         code = 200;
@@ -40,9 +40,9 @@ export const handler: Handler = async (event) => {
     }
   }
 
-  let body = { message, importJobId };
-
-  console.log(body);
+  let body = { message, importId };
+  
+  console.log(message);
 
   if (importResp) body.report = importResp;
 
@@ -57,12 +57,12 @@ export const handler: Handler = async (event) => {
 
 /**
  * Gets an import job response object from S3 if it exists
- * @param importJobId - The import job id to locate the the S3 response object for.
+ * @param importId - The import job id to locate the the S3 response object for.
  */
-export const getImportJobResponse = async (importJobId: string) => {
+export const getImportJobResponse = async (importId: string) => {
   const params = {
     Bucket: BUCKET_NAME,
-    Key: `response/${importJobId}`,
+    Key: `response/${importId}`,
   };
 
   // Create the PutObjectCommand and send it

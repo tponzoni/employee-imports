@@ -26,8 +26,12 @@ export const validateEmployees = (
 ): ValidatedItem[] => {
   const allItems: ValidatedItem[] = [];
   const filteredItems: ValidatedItem[] = [];
-
-  console.log("Validating employees payload");
+  
+  var date = new Date();
+  var epoch = date.getTime();
+  
+  // converting back to date-time
+  var whenModified = new Date(epoch);
 
   for (let i = 0; i < employees.length; i++) {
     const employee = employees[i];
@@ -49,41 +53,33 @@ export const validateEmployees = (
     const validatedItem: ValidatedItem = { index: i, errors: errors };
 
     if (employee.empNo) {
-
       // check if empNo is unique before adding
       const isDuplicate = allItems.some(
-        (item) => item?.employee?.empNo === employee.empNo
+        (item) => item?.employee?.empNo === employee.empNo,
       );
 
       if (isDuplicate) {
+        errors.push(`Duplicate empNo detected at index`);
+      }
 
-        errors.push(
-          `Duplicate empNo detected at index`,
-        );
-      }
-      else {
-        validatedItem.employee = employee;
-      }
+      employee.PK = employee.empNo;
+      employee.whenModified = whenModified;
+      validatedItem.employee = employee;
     }
 
     if (employee.phNo) {
-
-      // check if empNo is unique before adding
-      const isDuplicate = allItems.some(
-        (item) => item?.employee?.phNo && item?.employee?.phNo == employee.phNo
-      );
+      // check if phNo is unique before accepting the request
+      const isDuplicate = allItems.some((item) => {
+        return item.employee?.phNo == employee.phNo;
+      });
 
       if (isDuplicate) {
+        errors.push(`Duplicate phNo detected at index`);
+      }
 
-        errors.push(
-          `Duplicate phNo detected at index`,
-        );
-      }
-      else {
-        validatedItem.employee = employee;
-      }
+      validatedItem.employee = employee;
     }
-    
+
     // all items keep track of duplicates, by empNo or phNo
     allItems.push(validatedItem);
 

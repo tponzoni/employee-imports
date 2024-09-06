@@ -1,6 +1,6 @@
 import { Handler } from "aws-lambda";
-import { getObject, putObjectToS3 } from "../../core/src/s3";
-import { batchWriteItem } from "../../core/src/ddb";
+import { getObject, putObject } from "../../core/src/s3";
+import { transactWriteItems } from "../../core/src/ddb";
 import {
   ValidatedItem,
   GroupedErrors,
@@ -8,6 +8,10 @@ import {
   Employee,
 } from "../../core/src/validation";
 
+const DEBUG = process.env.DEBUG == "1";
+const MAX_TRANSACT_WRITE_BATCH = process.env.MAX_TRANSACT_WRITE_BATCH
+  ? parseInt(process.env.MAX_TRANSACT_WRITE_BATCH)
+  : 1;
 const BUCKET_NAME = process.env.BUCKET_NAME;
 const TABLE_NAME = process.env.TABLE_NAME;
 
@@ -15,7 +19,7 @@ interface ImportReport {
   processedCount: number;
   successCount: number;
   failureCount: number;
-  errors?: ValidatedItem[];
+  errors: ValidatedItem[];
 }
 
 /**
@@ -26,11 +30,13 @@ export const handler: Handler = async (event) => {
   // get the S3 object source details
   const bucket = event.Records[0].s3.bucket.name;
   const key = event.Records[0].s3.object.key;
-  
+  const importId = key.replace("request/", "");
+
   let allItems: ValidatedItem[] = [];
 
   try {
-    console.log(`Loading request object from Bucket ${bucket} Key ${key}`);
+    if (DEBUG)
+      console.log(`Loading request object from Bucket ${bucket} Key ${key}`);
 
     // try to retrieve the import request object
     const payload = await getObject(bucket, key);
@@ -42,16 +48,16 @@ export const handler: Handler = async (event) => {
       // process the import request and obtain a report
       const report = await processImportRequest(allItems);
 
-      console.log("report", report);
+      //console.log("report", report);
 
       if (report) {
         // save the processing report to an S3 response object
-        await putObjectToS3(
+        await putObject(
           BUCKET_NAME,
-          `response/${key.replace("request/", "")}`,
+          `response/${importId}`,
           JSON.stringify(report),
         );
-        console.log("Import job completed successfully.");
+        if (DEBUG) console.log("Import job completed successfully.");
       }
     }
   } catch (error) {
@@ -75,31 +81,28 @@ export const processImportRequest = async (
     successCount: 0,
     failureCount: 0,
     processedCount: items.length,
+    errors: []
   };
-  let validEmployeeItems: ValidatedItem[] = [];
 
-  // loop through all the provided items, executing multiple batch writes for the valid items
+  // loop through all the provided items, executing multiple batch writes for the valid items and keeping track of the responses from DDB
   for (let i = 0; i < items.length; i += 1) {
     const validatedItem = items[i];
 
-    if (validatedItem.employee) {
-      validEmployeeItems.push(validatedItem);
-
-      if (validEmployeeItems.length == 25 || i == items.length - 1) {
-        const batchWriteResp = await batchWriteItem(
-          TABLE_NAME,
-          validEmployeeItems,
-        );
-
-        // reset the batch for the next call
-        validEmployeeItems = [];
+    if (validatedItem.errors?.length == 0) {
+      // process each transaction individuall so we have a better incorrectness handling
+      const transactResp = await transactWriteItems(TABLE_NAME, validatedItem);
+      
+      if (transactResp?.errors?.length > 0) {
+        report.errors.push(validatedItem);
+      } else {
+        report.successCount += 1;
       }
     } else {
-      report.failureCount += 1;
+      report.errors.push(validatedItem);
     }
   }
 
-  report.processedCount = items.length;
+  report.failureCount = report.errors.length;
 
   return report;
 };

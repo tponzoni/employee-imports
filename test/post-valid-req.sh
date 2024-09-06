@@ -6,11 +6,11 @@ endpoint="4agt8q6rj0.execute-api.eu-central-1.amazonaws.com"
 response=$(curl -s -X POST -H "Content-Type: application/json" -d @valid.json https://$endpoint/employee-imports)
 echo $response
 
-# Extract the importJobId from the response
-importJobId=$(echo $response | jq -r '.importJobId')
+# Extract the importId from the response
+importId=$(echo $response | jq -r '.importId')
 
 # Add a 5-second delay before the GET request
-sleep 7
+sleep 3
 
-# Perform GET request using the importJobId
-curl -X GET https://$endpoint/employee-imports/$importJobId
+# Perform GET request using the importId
+curl -X GET https://$endpoint/employee-imports/$importId
