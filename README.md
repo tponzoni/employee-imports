@@ -2,7 +2,7 @@
 
 This workload allows input directly via an S3 bucket and exposes a HTTP GET endpoint to both check the result of bulk employee async processing.
 
-![Employee Imports](https://github.com/tponzoni/employee-imports/ImportApiV1.png)
+See ImportApiV1.png for a high-level overview of the workload architecture.
 
 ## Input Uploads
 
