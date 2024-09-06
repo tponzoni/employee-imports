@@ -2,7 +2,7 @@
 
 This workload allows input directly via an S3 bucket and exposes a HTTP GET endpoint to both check the result of bulk employee async processing.
 
-![Employee Imports](./Import API.jpeg)
+![Employee Imports](/Import API.jpeg)
 
 ## Input Uploads
 
