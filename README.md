@@ -2,6 +2,8 @@
 
 This workload allows input directly via an S3 bucket and exposes a HTTP GET endpoint to both check the result of bulk employee async processing.
 
+![Employee Imports](./Import API.jpeg)
+
 ## Input Uploads
 
 API Gateway and Lambda functions have a upper payload site limit, therefore the upload is performed directly to S3.
