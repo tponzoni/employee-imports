@@ -21,6 +21,7 @@ aws s3 cp _valid.json s3://employee-imports-ec2-user-employeeimport-hudbnhao/req
 total_time=0
 time_limit=900
 sleep_interval=2
+importId=_valid.json
 
 while [ $total_time -lt $time_limit ]; do
   echo "Waiting for response"
