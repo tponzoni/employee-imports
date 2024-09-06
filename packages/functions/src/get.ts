@@ -29,19 +29,18 @@ export const handler: Handler = async (event) => {
       message = `The request did not include a valid import job id in the url. Please review your request and try again later.`;
     }
   } catch (error) {
-    console.error("Error handling the request:", error);
-
     // ignore the error if the S3 object was not found
     if (error.name === "NoSuchKey") {
       code = 404;
       message = `The requested import id is invalid or the import job has not yet been started/completed. Please review the provided import job id and try again later.`;
     } else {
+      console.error("Error handling the request:", error);
       message = `Error handling the request.`;
     }
   }
 
   let body = { message, importId };
-  
+
   console.log(message);
 
   if (importResp) body.report = importResp;

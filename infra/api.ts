@@ -6,9 +6,9 @@ api.route("POST /employee-imports", {
   link: [bucket],
   handler: "packages/functions/src/post.handler",
   environment: {
+    DEBUG: "1",
     MAX_PER_REQ: "10000",
-    BUCKET_NAME: bucket.name,
-    DEBUG: "0"
+    BUCKET_NAME: bucket.name
   }
 });
 

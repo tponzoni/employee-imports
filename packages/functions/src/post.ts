@@ -38,7 +38,7 @@ export const handler: Handler = async (event) => {
       if (!hasErrors) {
         // generate an object key and save it to S3 for async processing
         const strPayload = JSON.stringify(payload);
-        importId = generateUniqueKey(strPayload);
+        importId = generateGUID();
 
         await putObject(BUCKET_NAME, `request/${importId}`, strPayload);
 
@@ -68,25 +68,7 @@ export const handler: Handler = async (event) => {
   } else {
     console.log("Errors detected");
 
-    // check if the header 'x-resp-group-by-index' is present, the default response groups by
-    // error message and presents a list of indexes that have a specific error message
-    if (event.headers["x-resp-group-by-error"]) {
-      // summarize the errors for a shorter response payload that has less repetition
-      const groupedErrors: GroupedErrors = {};
-
-      validatedItems.forEach((item) => {
-        item.errors?.forEach((error) => {
-          if (!groupedErrors[error]) {
-            groupedErrors[error] = [];
-          }
-          groupedErrors[error].push(item.index);
-        });
-      });
-
-      body.errors = groupedErrors;
-    } else {
-      body.errors = validatedItems;
-    }
+    body.errors = validatedItems;
   }
 
   return {
@@ -103,24 +85,10 @@ export const handler: Handler = async (event) => {
  * @param payload - The payload to hash
  * @returns a unique key for S3 object which combines both the hash and the current time
  */
-export const generateUniqueKey = (payload: string): string => {
-  
-  const newGUID = generateGUID();
-  return newGUID;
-  // const newUUID: string = uuidv4();
-  // console.log(newUUID);
-  // const timestamp = new Date().toISOString(); // current date and time
-  // const hash = crypto.createHash("sha256").update(payload).digest("hex"); // create hash
-  // return `${hash}_${timestamp.replace(/[:.-]/g, "")}`; // create a unique key
-};
-
-
 function generateGUID() {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-        const r = Math.random() * 16 | 0;
-        const v = c === 'x' ? r : (r & 0x3 | 0x8);
-        return v.toString(16);
-    });
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
+    const r = (Math.random() * 16) | 0;
+    const v = c === "x" ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
 }
-
-const newGUID = generateGUID();

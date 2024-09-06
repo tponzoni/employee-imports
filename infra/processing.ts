@@ -8,8 +8,7 @@ bucket.subscribe(
     memory: "2048 MB",
     timeout: "900 seconds",
     environment: {
-      DEBUG: "0",
-      MAX_TRANSACT_WRITE_BATCH: "1",
+      DEBUG: "1",
       BUCKET_NAME: bucket.name,
       TABLE_NAME: table.name
     },
