@@ -25,6 +25,16 @@ Processing 10000 items takes roughly 3 minutes to complete
 The workload exposes an HTTP GET endpoint which allows for the caller to check the result of the input processing.
 If the result is not yet produced or the request has an invalid request id, then the endpoint returns an error message.
 
+## Data Storage
+
+To receive import requests and store processing responses, this workload leverages Large Object storage with S3 and stores the individual employee items into an Employee DynamoDB table.
+The Employees table would probably be part of a different deployment, I deployed it here just for end to end integration and demonstration.
+The Employee table does not accept duplicate empNo (partition key) or duplicate phNo which is kept as its own item for uniqueness guarantee.
+
+## High Level Design
+
+TBA
+
 ## Testing
 
 From the terminal in the ./tests folder, run post-valid.sh to simulate a large JSON file being uploaded to S3 to begin the async processing.
