@@ -1,84 +1,31 @@
-# Monorepo Template
+# Employee Imports
 
-A template to create a monorepo SST ❍ Ion project.
+This workload allows input directly via an S3 bucket and exposes a HTTP GET endpoint to both check the result of bulk employee async processing.
 
-## Get started
+## Input Uploads
 
-1. Deploy
-2. Run test against the employee-imports API (see Testing)
+API Gateway and Lambda functions have a upper payload site limit, therefore the upload is performed directly to S3.
+The input is expected to be a JSON array containing a maximum of 10000 items and each item needs to look like the following:
+[
+   { "empNo": "1", "firstName": "1", "lastName": "1", "phNo": "1" },
+    { "empNo": "2", "firstName": "2", "lastName": "2", "phNo": "2" }
+]
+The file containing the bulk employee items needs to be uploaded to a target S3 bucket, into the request/ prefix (or folder).
+
+## Async Processing
+
+Once the file is uploaded, S3 automatically generates an event notification which is handled by the processing function.
+The processing function uses the maximum allowed Lambda timeout, because processing 10000 items can be a long process and most settings are configurable.
+This function loads the input file from S3 and processes each item within a transaction.
+The transaction takes care of updating the actual employee item as well as an extra unique item for only the phone number which guarantees uniqueness.
+Processing 10000 items takes roughly 3 minutes to complete
+
+## Querying Processing Report
+
+The workload exposes an HTTP GET endpoint which allows for the caller to check the result of the input processing.
+If the result is not yet produced or the request has an invalid request id, then the endpoint returns an error message.
 
 ## Testing
 
-From the terminal in the ./tests folder, run post-import-request.sh to simulate a JSON POST to the employee-imports API
-
-## 
-
-1. Use this template to [create your own repo](https://docs.github.com/en/repositories/creating-and-managing-repositories/creating-a-repository-from-a-template).
-
-2. Clone the new repo.
-
-   ```bash
-   git clone MY_APP
-   cd MY_APP
-   ```
-
-3. Rename the files in the project to the name of your app. 
-
-   ```bash
-   npx replace-in-file /monorepo-template/g MY_APP **/*.* --verbose
-   ```
-
-4. Deploy!
-
-   ```bash
-   npm install
-   npx sst deploy
-   ```
-
-6. Optionally, enable [_git push to deploy_](https://ion.sst.dev/docs/console/#autodeploy).
-
-## Usage
-
-This template uses [npm Workspaces](https://docs.npmjs.com/cli/v8/using-npm/workspaces). It has 3 packages to start with and you can add more it.
-
-1. `core/`
-
-   This is for any shared code. It's defined as modules. For example, there's the `Example` module.
-
-   ```ts
-   export module Example {
-     export function hello() {
-       return "Hello, world!";
-     }
-   }
-   ```
-
-   That you can use across other packages using.
-
-   ```ts
-   import { Example } from "@aws-monorepo/core/example";
-
-   Example.hello();
-   ```
-
-2. `functions/`
-
-   This is for your Lambda functions and it uses the `core` package as a local dependency.
-
-3. `scripts/`
-
-    This is for any scripts that you can run on your SST app using the `sst shell` CLI and [`tsx`](https://www.npmjs.com/package/tsx). For example, you can run the example script using:
-
-   ```bash
-   npm run shell src/example.ts
-   ```
-
-### Infrastructure
-
-The `infra/` directory allows you to logically split the infrastructure of your app into separate files. This can be helpful as your app grows.
-
-In the template, we have an `api.ts`, and `storage.ts`. These export the created resources. And are imported in the `sst.config.ts`.
-
----
-
-Join the SST community over on [Discord](https://discord.gg/sst) and follow us on [Twitter](https://twitter.com/SST_dev).
+From the terminal in the ./tests folder, run post-valid.sh to simulate a large JSON file being uploaded to S3 to begin the async processing.
+This script runs a loop and waits for the processes to be completed and presents the final results.
